@@ -1,23 +1,28 @@
 <html>
 <head>
-<script type="text/javascript"
-  src="dygraph-combined.js"></script>
+	<title>室内空气PM指数</title>
+	<meta http-equiv="refresh" content="5">
+	<script type="text/javascript" src="dygraph-combined.js"></script>
 </head>
 <body>
-<div id="graphdiv"></div>
-<script type="text/javascript">
-  g = new Dygraph(
-
-    // containing div
-    document.getElementById("graphdiv"),
-
-    // CSV or path to a CSV file.
-    "Date,Temperature\n" +
-    "2008-05-07,75\n" +
-    "2008-05-08,70\n" +
-    "2008-05-09,80\n"
-
-  );
-</script>
+	<div id="second" style="width:100%;height:30%;"></div>
+	<div id="minute" style="width:100%;height:30%;"></div>
+	<div id="hour" style="width:100%;height:30%;"></div>
+	<script type="text/javascript">
+	new Dygraph(
+		document.getElementById("second"),
+		"data/1.csv",
+		{
+		}
+	);
+	new Dygraph(
+		document.getElementById("minute"),
+		"data/60.csv"
+	);
+	new Dygraph(
+		document.getElementById("hour"),
+		"data/3600.csv"
+	);
+	</script>
 </body>
 </html>

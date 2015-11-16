@@ -17,6 +17,7 @@ class A4Signal(object):
         if not (s[0] == 50 and s[1] == 61):
             print "Auth failed"
             return
+        self.time = int(time.time())
         self.pm25 = s[6] * 256 + s[7]
         self.pm10 = s[8] * 256 + s[9]
         verify_sum = sum(s[:-2])
@@ -41,19 +42,18 @@ class A4Serial(object):
             self.serial = self.serial[:self.limit]
             self.export()
 
-    def content(self):
-        pm25 = [s.pm25 for s in self.serial]
-        pm10 = [s.pm10 for s in self.serial]
-        return (pm25, pm10)
-
     def export(self):
-        json.dump(self.content(), open("data/%d.json" % self.stride, "w"))
+        with open("data/%d.csv" % self.stride, "w") as fout:
+            print >> fout, "Time, PM2.5, PM10"
+            for s in self.serial:
+                time_str = time.ctime(s.time)
+                print >> fout, "%s,%d,%d" % (time_str, s.pm25, s.pm10)
 
 if __name__ == "__main__":
     recs = [
-        A4Serial(stride=1),
-        A4Serial(stride=60),
-        A4Serial(stride=3600),
+        A4Serial(stride=1, limit=3600),
+        A4Serial(stride=60, limit=60*24),
+        A4Serial(stride=3600, limit=31),
     ]
     ser = serial.Serial("/dev/ttyUSB0", 9600)
     while True:
