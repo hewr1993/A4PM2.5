@@ -7,7 +7,7 @@ __author__ = "Wayne Ho"
 
 import time
 import serial
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 
 
 class A4Signal(object):
@@ -18,7 +18,8 @@ class A4Signal(object):
         self.pm10 = s[8] * 256 + s[9]
         verify_sum = sum(s[:-2])
         verify_code = s[-2] * 256 + s[-1]
-        assert verify_sum == verify_code
+        if verify_sum != verify_code:
+		print "Auth failed"
 
 
 class A4Serial(object):
@@ -26,27 +27,28 @@ class A4Serial(object):
         self.limit = limit
         self.level = level
         self.serial = []
-        plt.ion()
-        plt.show()
+#        plt.ion()
+#        plt.show()
 
     def add(self, signal):
         self.serial.append(signal)
-        v25 = [a4.pm25 for a4 in self.serial[-self.limit:]]
-        v10 = [a4.pm10 for a4 in self.serial[-self.limit:]]
+        self.serial = self.serial[:self.limit]
+        v25 = [a4.pm25 for a4 in self.serial]
+        v10 = [a4.pm10 for a4 in self.serial]
         max_val = max(v25 + v10)
-        plt.clf()
-        plt.xlim(0, self.limit)
-        plt.ylim(0, max(self.level, max_val))
-        plt.plot(v25, label="pm2.5")
-        plt.legend()
-        plt.plot(v10, label="pm10")
-        plt.legend()
-        plt.draw()
+#        plt.clf()
+#        plt.xlim(0, self.limit)
+#        plt.ylim(0, max(self.level, max_val))
+#        plt.plot(v25, label="pm2.5")
+#        plt.legend()
+#        plt.plot(v10, label="pm10")
+#        plt.legend()
+#        plt.draw()
 
 if __name__ == "__main__":
     serial_recorder = A4Serial()
-    ser = serial.Serial("/dev/tty.SLAB_USBtoUART", 9600)
+    ser = serial.Serial("/dev/ttyUSB0", 9600)
     while True:
         a4 = A4Signal(ser.read(32))
-        #print "[PM2.5] %d\t[PM10] %d" % (a4.pm25, a4.pm10)
+        print "[PM2.5] %d\t[PM10] %d" % (a4.pm25, a4.pm10)
         serial_recorder.add(a4)
