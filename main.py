@@ -8,10 +8,14 @@ __author__ = "Wayne Ho"
 import time
 import serial
 import json
+import os
+import csv
 
 
 class A4Signal(object):
-    def __init__(self, signal):
+    def __init__(self, signal=None):
+        if signal is None:
+            return
         self.legal = False
         s = [ord(x) for x in signal]
         if not (s[0] == 50 and s[1] == 61):
@@ -27,6 +31,12 @@ class A4Signal(object):
             return
         self.legal = True
 
+    def set_value(self, _time, pm25, pm10):
+        self.time = _time
+        self.pm25 = pm25
+        self.pm10 = pm10
+        self.legal = True
+
 
 class A4Serial(object):
     def __init__(self, limit=1000, stride=1):
@@ -34,16 +44,25 @@ class A4Serial(object):
         self.stride = stride
         self.current = -1
         self.serial = []
+        self.path = "data/%d.csv" % stride
+        if os.path.exists(self.path):
+            for idx, arr in enumerate(csv.reader(open(self.path))):
+                if idx > 0:
+                    sig = A4Signal()
+                    timestamp = time.mktime(time.strptime(arr[0]))
+                    sig.set_value(timestamp, int(arr[1]), int(arr[2]))
+                    self.serial.append(sig)
 
     def add(self, signal):
         self.current = (self.current + 1) % self.stride
         if self.current == 0:
             self.serial.append(signal)
-            self.serial = self.serial[:self.limit]
+            while len(self.serial) > self.limit:
+                self.serial.pop(0)
             self.export()
 
     def export(self):
-        with open("data/%d.csv" % self.stride, "w") as fout:
+        with open(self.path, "w") as fout:
             print >> fout, "Time, PM2.5, PM10"
             for s in self.serial:
                 time_str = time.ctime(s.time)
