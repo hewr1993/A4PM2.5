@@ -51,9 +51,9 @@ class A4Serial(object):
 
 if __name__ == "__main__":
     recs = [
-        A4Serial(stride=1, limit=3600),
-        A4Serial(stride=60, limit=60*24),
-        A4Serial(stride=3600, limit=31),
+        A4Serial(stride=5, limit=60 * 10 / 5),
+        A4Serial(stride=60, limit=60),
+        A4Serial(stride=3600, limit=24),
     ]
     ser = serial.Serial("/dev/ttyUSB0", 9600)
     while True:
