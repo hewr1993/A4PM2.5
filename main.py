@@ -22,6 +22,7 @@ class A4Signal(object):
             print "Auth failed"
             return
         self.time = int(time.time())
+        self.pm1  = s[4] * 256 + s[5]
         self.pm25 = s[6] * 256 + s[7]
         self.pm10 = s[8] * 256 + s[9]
         verify_sum = sum(s[:-2])
@@ -31,8 +32,9 @@ class A4Signal(object):
             return
         self.legal = True
 
-    def set_value(self, _time, pm25, pm10):
+    def set_value(self, _time, pm1, pm25, pm10):
         self.time = _time
+        self.pm1 = pm1
         self.pm25 = pm25
         self.pm10 = pm10
         self.legal = True
@@ -50,7 +52,7 @@ class A4Serial(object):
                 if idx > 0:
                     sig = A4Signal()
                     timestamp = time.mktime(time.strptime(arr[0]))
-                    sig.set_value(timestamp, int(arr[1]), int(arr[2]))
+                    sig.set_value(timestamp, int(arr[1]), int(arr[2]), int(arr[3]))
                     self.serial.append(sig)
 
     def add(self, signal):
@@ -63,10 +65,10 @@ class A4Serial(object):
 
     def export(self):
         with open(self.path, "w") as fout:
-            print >> fout, "Time, PM2.5, PM10"
+            print >> fout, "Time, PM1, PM2.5, PM10"
             for s in self.serial:
                 time_str = time.ctime(s.time)
-                print >> fout, "%s,%d,%d" % (time_str, s.pm25, s.pm10)
+                print >> fout, "%s,%d,%d,%d" % (time_str, s.pm1, s.pm25, s.pm10)
 
 if __name__ == "__main__":
     recs = [
@@ -78,7 +80,7 @@ if __name__ == "__main__":
     while True:
         a4 = A4Signal(ser.read(32))
         if a4.legal:
-            print "[PM2.5] %d\t[PM10] %d" % (a4.pm25, a4.pm10)
+            print "[PM1] %d\t[PM2.5] %d\t[PM10] %d" % (a4.pm1, a4.pm25, a4.pm10)
             for rec in recs:
                 rec.add(a4)
 
